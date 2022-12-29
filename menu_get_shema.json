@@ -1,0 +1,243 @@
+{
+  "type": "object",
+  "properties": {
+    "MONDAY": {
+      "type": "object",
+      "properties": {
+        "original": {
+          "type": "menu object",
+          "properties": {
+            "img": {
+              "type": "string (path para endpoint /images/$path)"
+            },
+            "weekDay": {
+              "type": "string"
+            },
+            "soup": {
+              "type": "string"
+            },
+            "fish": {
+              "type": "string"
+            },
+            "meat": {
+              "type": "string"
+            },
+            "vegetarian": {
+              "type": "string"
+            },
+            "desert": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "weekDay",
+            "soup",
+            "fish",
+            "meat",
+            "vegetarian",
+            "desert"
+          ]
+        },
+        "update": {
+          "type": "null or menu object"
+        }
+      },
+      "required": [
+        "original",
+        "update"
+      ]
+    },
+    "TUESDAY": {
+      "type": "menu object",
+      "properties": {
+        "original": {
+          "type": "object",
+          "properties": {
+            "img": {
+              "type": "string (path para endpoint /images/$path)"
+            },
+            "weekDay": {
+              "type": "string"
+            },
+            "soup": {
+              "type": "string"
+            },
+            "fish": {
+              "type": "string"
+            },
+            "meat": {
+              "type": "string"
+            },
+            "vegetarian": {
+              "type": "string"
+            },
+            "desert": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "weekDay",
+            "soup",
+            "fish",
+            "meat",
+            "vegetarian",
+            "desert"
+          ]
+        },
+        "update": {
+          "type": "null or menu object"
+        }
+      },
+      "required": [
+        "original",
+        "update"
+      ]
+    },
+    "WEDNESDAY": {
+      "type": "menu object",
+      "properties": {
+        "original": {
+          "type": "object",
+          "properties": {
+            "img": {
+              "type": "string (path para endpoint /images/$path)"
+            },
+            "weekDay": {
+              "type": "string"
+            },
+            "soup": {
+              "type": "string"
+            },
+            "fish": {
+              "type": "string"
+            },
+            "meat": {
+              "type": "string"
+            },
+            "vegetarian": {
+              "type": "string"
+            },
+            "desert": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "img",
+            "weekDay",
+            "soup",
+            "fish",
+            "meat",
+            "vegetarian",
+            "desert"
+          ]
+        },
+        "update": {
+          "type": "null or menu object"
+        }
+      },
+      "required": [
+        "original",
+        "update"
+      ]
+    },
+    "THURSDAY": {
+      "type": "menu object",
+      "properties": {
+        "original": {
+          "type": "object",
+          "properties": {
+            "img": {
+              "type": "string (path para endpoint /images/$path)"
+            },
+            "weekDay": {
+              "type": "string"
+            },
+            "soup": {
+              "type": "string"
+            },
+            "fish": {
+              "type": "string"
+            },
+            "meat": {
+              "type": "string"
+            },
+            "vegetarian": {
+              "type": "string"
+            },
+            "desert": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "weekDay",
+            "soup",
+            "fish",
+            "meat",
+            "vegetarian",
+            "desert"
+          ]
+        },
+        "update": {
+          "type": "null or menu object"
+        }
+      },
+      "required": [
+        "original",
+        "update"
+      ]
+    },
+    "FRIDAY": {
+      "type": "menu object",
+      "properties": {
+        "original": {
+          "type": "object",
+          "properties": {
+            "img": {
+              "type": "string (path para endpoint /images/$path)"
+            },
+            "weekDay": {
+              "type": "string"
+            },
+            "soup": {
+              "type": "string"
+            },
+            "fish": {
+              "type": "string"
+            },
+            "meat": {
+              "type": "string"
+            },
+            "vegetarian": {
+              "type": "string"
+            },
+            "desert": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "weekDay",
+            "soup",
+            "fish",
+            "meat",
+            "vegetarian",
+            "desert"
+          ]
+        },
+        "update": {
+          "type": "null or menu object"
+        }
+      },
+      "required": [
+        "original",
+        "update"
+      ]
+    }
+  },
+  "required": [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+    "type": "menu object",
+    "properties": {
+        "img": {
+            "type": "string (imagem em base 64)"
+        },
+        "weekDay": {
+            "type": "string"
+        },
+        "soup": {
+            "type": "string"
+        },
+        "fish": {
+            "type": "string"
+        },
+        "meat": {
+            "type": "string"
+        },
+        "vegetarian": {
+            "type": "string"
+        },
+        "desert": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "weekDay",
+        "soup",
+        "fish",
+        "meat",
+        "vegetarian",
+        "desert"
+    ]
+}
+
