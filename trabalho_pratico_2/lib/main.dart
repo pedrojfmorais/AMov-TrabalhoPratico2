@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -67,31 +68,44 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _loadSharedPreferences() async {
     var prefs = await SharedPreferences.getInstance();
     String? userPref = prefs.getString('diasSemanaEmenta');
-    setState(() {
-      if (userPref == null) {
-        _diasSemanaEmenta = null;
-      } else {
-        _diasSemanaEmenta = [];
-        List<dynamic> lista = jsonDecode(userPref);
-        _diasSemanaEmenta =
-            List<DiaSemana>.from(lista.map((e) => DiaSemana.fromJson(e, "")));
 
-        for (int i = 1; i <= Constants.diasSemana.length; i++) {
-          for (var diaSemana in _diasSemanaEmenta!) {
-            if (diaSemana.original.weekDay == Constants.diasSemana[i]) {
-              diaSemana.dia = Constants.diasSemanaPortugues[i]!;
-              break;
-            }
+    if (userPref == null) {
+      _diasSemanaEmenta = null;
+    } else {
+      _diasSemanaEmenta = [];
+      List<dynamic> lista = jsonDecode(userPref);
+      _diasSemanaEmenta =
+          List<DiaSemana>.from(lista.map((e) => DiaSemana.fromJson(e, "")));
+
+      for (int i = 1; i <= Constants.diasSemana.length; i++) {
+        for (var diaSemana in _diasSemanaEmenta!) {
+          if (diaSemana.original.weekDay == Constants.diasSemana[i]) {
+            diaSemana.dia = Constants.diasSemanaPortugues[i]!;
+            break;
           }
         }
+      }
 
-        _weekday = DateTime.now().weekday < 6 ? DateTime.now().weekday : 1;
+      _weekday = DateTime.now().weekday < 6 ? DateTime.now().weekday : 1;
 
-        while (_diasSemanaEmenta!.first.dia !=
-            Constants.diasSemanaPortugues[_weekday]) {
-          _diasSemanaEmenta!.add(_diasSemanaEmenta!.removeAt(0));
+      while (_diasSemanaEmenta!.first.dia !=
+          Constants.diasSemanaPortugues[_weekday]) {
+        _diasSemanaEmenta!.add(_diasSemanaEmenta!.removeAt(0));
+      }
+
+      for (var diaSemana in _diasSemanaEmenta!) {
+        if (diaSemana.update != null && diaSemana.update!.img != null) {
+          diaSemana.original.imageBytes = await _getImage(diaSemana.update!.img!);
+        } else if (diaSemana.original.img != null) {
+          diaSemana.original.imageBytes =
+          await _getImage(diaSemana.original.img!);
+        } else {
+          diaSemana.original.imageBytes = null;
         }
       }
+    }
+    setState(() {
+      _diasSemanaEmenta;
     });
   }
 
@@ -140,6 +154,20 @@ class _MyHomePageState extends State<MyHomePage> {
           _diasSemanaEmenta!.add(_diasSemanaEmenta!.removeAt(0));
         }
 
+        for (var diaSemana in _diasSemanaEmenta!) {
+          if (diaSemana.update != null && diaSemana.update!.img != null) {
+            diaSemana.original.imageBytes =
+                await _getImage(diaSemana.update!.img!);
+          } else if (diaSemana.original.img != null) {
+            diaSemana.original.imageBytes =
+                await _getImage(diaSemana.original.img!);
+          } else {
+            diaSemana.original.imageBytes = null;
+          }
+          diaSemana.update ??= diaSemana.original;
+        }
+
+
         setState(() => {_diasSemanaEmenta});
       }
     } catch (ex) {
@@ -149,6 +177,15 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() => _imageSize = 250);
       _saveSharedPreferences();
     }
+  }
+
+  Future<String?> _getImage(String nomeImagem) async {
+    http.Response response =
+        await http.get(Uri.parse(Constants.ementaImageUrl + nomeImagem));
+    if (response.statusCode == HttpStatus.ok) {
+      return String.fromCharCodes(response.bodyBytes);
+    }
+    return null;
   }
 
   @override
@@ -214,6 +251,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                       color: Colors.amber,
                                       fontSize: 24),
                                 ),
+                                if (diaSemana.original.imageBytes != null)
+                                  Image.memory(
+                                    Uint8List.fromList(diaSemana
+                                        .original.imageBytes!.codeUnits),
+                                    height: 100,
+                                  ),
                                 const Icon(Icons.soup_kitchen),
                                 if (diaSemana.update != null &&
                                     diaSemana.original.soup !=

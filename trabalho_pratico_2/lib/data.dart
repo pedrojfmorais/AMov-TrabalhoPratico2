@@ -1,4 +1,6 @@
 
+import 'dart:typed_data';
+
 class Constants {
   static const Map<int, String> diasSemana = {
     1: 'MONDAY',
@@ -22,6 +24,7 @@ class Constants {
 class Ementa {
   Ementa.fromJson(Map<String, dynamic> json)
       : img = json['img'],
+        imageBytes = "",
         weekDay = json['weekDay'],
         soup = json['soup'],
         fish = json['fish'],
@@ -41,16 +44,17 @@ class Ementa {
     };
   }
 
-  Ementa(this.img, this.weekDay, this.soup, this.fish, this.meat,
+  Ementa(this.img, this.imageBytes, this.weekDay, this.soup, this.fish, this.meat,
       this.vegetarian, this.desert);
 
-  final String? img;
-  final String? weekDay;
-  final String? soup;
-  final String? fish;
-  final String? meat;
-  final String? vegetarian;
-  final String? desert;
+  late String? img;
+  late String? imageBytes;
+  late String? weekDay;
+  late String? soup;
+  late String? fish;
+  late String? meat;
+  late String? vegetarian;
+  late String? desert;
 }
 
 class DiaSemana {
@@ -69,7 +73,7 @@ class DiaSemana {
 
   String dia;
   final Ementa original;
-  final Ementa? update;
+  Ementa? update;
 }
 
 class ArgumentosEditScreen {

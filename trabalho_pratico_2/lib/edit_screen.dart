@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:trabalho_pratico_2/main.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,6 +36,7 @@ class _EditScreenState extends State<EditScreen> {
   @override
   void initState() {
     super.initState();
+
     _tecSopa.addListener(_tecSopaVerificaTexto);
     _tecCarne.addListener(_tecCarneVerificaTexto);
     _tecPeixe.addListener(_tecPeixeVerificaTexto);
@@ -68,6 +70,7 @@ class _EditScreenState extends State<EditScreen> {
   }
 
   void _verificaTexto(var tec, var original, var update, int indiceAtivo) {
+
     if (tec.text != original) {
       _diferenteOriginal[indiceAtivo] = true;
     } else {
@@ -176,8 +179,12 @@ class _EditScreenState extends State<EditScreen> {
     _tecSobremesa.dispose();
   }
 
-  Future<http.Response> _updateEmenta() {
+  Future<http.Response> _updateEmenta() async {
     Navigator.pop(context);
+
+    ByteData bytes = await rootBundle.load('resources/logo.png');
+    var buffer = bytes.buffer;
+    var m = base64.encode(Uint8List.view(buffer));
 
     return http
         .post(
@@ -186,7 +193,9 @@ class _EditScreenState extends State<EditScreen> {
             'Content-Type': 'application/json; charset=UTF-8',
           },
           body: jsonEncode(Ementa(
-              diaSemana.original.img,
+              // diaSemana.original.img,
+              m,
+              null,
               diaSemana.original.weekDay,
               _tecSopa.text,
               _tecPeixe.text,
