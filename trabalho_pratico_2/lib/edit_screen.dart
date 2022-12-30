@@ -244,6 +244,9 @@ class _EditScreenState extends State<EditScreen> {
                                   _diferenteOriginal[0] ? _resetSopa : null,
                               tooltip: 'Reset',
                               heroTag: "AMovTP2-reset-sopa",
+                              backgroundColor: _diferenteOriginal[0]
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white24,
                               child: const Icon(Icons.backspace_outlined),
                             ),
                           ),
@@ -271,6 +274,9 @@ class _EditScreenState extends State<EditScreen> {
                                   _diferenteOriginal[1] ? _resetCarne : null,
                               tooltip: 'Reset',
                               heroTag: "AMovTP2-reset-carne",
+                              backgroundColor: _diferenteOriginal[1]
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white24,
                               child: const Icon(Icons.backspace_outlined),
                             ),
                           ),
@@ -298,6 +304,9 @@ class _EditScreenState extends State<EditScreen> {
                                   _diferenteOriginal[2] ? _resetPeixe : null,
                               tooltip: 'Reset',
                               heroTag: "AMovTP2-reset-peixe",
+                              backgroundColor: _diferenteOriginal[2]
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white24,
                               child: const Icon(Icons.backspace_outlined),
                             ),
                           ),
@@ -326,6 +335,9 @@ class _EditScreenState extends State<EditScreen> {
                                   : null,
                               tooltip: 'Reset',
                               heroTag: "AMovTP2-reset-vegetariano",
+                              backgroundColor: _diferenteOriginal[3]
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white24,
                               child: const Icon(Icons.backspace_outlined),
                             ),
                           ),
@@ -352,6 +364,9 @@ class _EditScreenState extends State<EditScreen> {
                                   : null,
                               tooltip: 'Reset',
                               heroTag: "AMovTP2-reset-sobremesa",
+                              backgroundColor: _diferenteOriginal[4]
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white24,
                               child: const Icon(Icons.backspace_outlined),
                             ),
                           ),
