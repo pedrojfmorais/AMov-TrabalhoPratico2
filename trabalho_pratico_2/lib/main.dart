@@ -193,11 +193,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<DiaSemana>? _diasSemanaEmenta = [];
   bool _fetchingData = false;
+  double? _imageSize = 250;
   int _weekday = 1;
 
   Future<void> _fetchEmenta() async {
     try {
       setState(() => _fetchingData = true);
+      setState(() => _imageSize = 50);
       http.Response response =
           await http.get(Uri.parse(Constants.ementaMenuUrl));
       if (response.statusCode == HttpStatus.ok) {
@@ -229,6 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
       debugPrint('Something went wrong: $ex');
     } finally {
       setState(() => _fetchingData = false);
+      setState(() => _imageSize = 250);
       _saveSharedPreferences();
     }
   }
@@ -250,9 +253,17 @@ class _MyHomePageState extends State<MyHomePage> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.asset(
-                  'resources/logo.png',
-                  height: 250,
+                child: AnimatedContainer(
+                  height: _imageSize,
+                  width: _imageSize,
+                  duration: const Duration(seconds: 1),
+                  curve: Curves.fastOutSlowIn,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('resources/logo.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
               if (_diasSemanaEmenta == null)

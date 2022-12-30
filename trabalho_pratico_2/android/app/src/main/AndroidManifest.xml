@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pt.isec.amov.a2018020733.trabalho_pratico_2">
    <application
-        android:label="trabalho_pratico_2"
+        android:label="AMov-TP2"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

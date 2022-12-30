@@ -5,7 +5,7 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = trabalho_pratico_2
+PRODUCT_NAME = AMov-TP2
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = pt.isec.amov.a2018020733.trabalhoPratico2
