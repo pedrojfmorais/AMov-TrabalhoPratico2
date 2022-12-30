@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:page_transition/page_transition.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'edit_screen.dart';
 
@@ -10,17 +12,25 @@ void main() {
   runApp(const MyApp());
 }
 
-const Map<int, String> diasSemana = {
-  1: "MONDAY",
-  2: "TUESDAY",
-  3: "WEDNESDAY",
-  4: "THURSDAY",
-  5: "FRIDAY"
-};
+class Constants {
+  static const Map<int, String> diasSemana = {
+    1: 'MONDAY',
+    2: 'TUESDAY',
+    3: 'WEDNESDAY',
+    4: 'THURSDAY',
+    5: 'FRIDAY'
+  };
+  static const Map<int, String> diasSemanaPortugues = {
+    1: 'Segunda-feira',
+    2: 'Terça-feira',
+    3: 'Quarta-feira',
+    4: 'Quinta-feira',
+    5: 'Sexta-feira'
+  };
 
-const String _ementaUrl = 'http://127.0.0.1:8080';
-const String _menu = "/menu";
-const String _image = "/images/";
+  static const String ementaMenuUrl = 'http://192.168.1.39:8080/menu';
+  static const String ementaImageUrl = 'http://192.168.1.39:8080/images/';
+}
 
 class Ementa {
   Ementa.fromJson(Map<String, dynamic> json)
@@ -32,13 +42,28 @@ class Ementa {
         vegetarian = json['vegetarian'],
         desert = json['desert'];
 
+  Map<String, dynamic> toJson() {
+    return {
+      'img': img,
+      'weekDay': weekDay,
+      'soup': soup,
+      'fish': fish,
+      'meat': meat,
+      'vegetarian': vegetarian,
+      'desert': desert,
+    };
+  }
+
+  Ementa(this.img, this.weekDay, this.soup, this.fish, this.meat,
+      this.vegetarian, this.desert);
+
   final String? img;
-  final String weekDay;
-  final String soup;
-  final String fish;
-  final String meat;
-  final String vegetarian;
-  final String desert;
+  final String? weekDay;
+  final String? soup;
+  final String? fish;
+  final String? meat;
+  final String? vegetarian;
+  final String? desert;
 }
 
 class DiaSemana {
@@ -47,9 +72,24 @@ class DiaSemana {
         update =
             json['update'] == null ? null : Ementa.fromJson(json['update']);
 
-  final String dia;
+  Map<String, dynamic> toJson() {
+    return {
+      'dia': dia,
+      'original': original,
+      'update': update,
+    };
+  }
+
+  String dia;
   final Ementa original;
   final Ementa? update;
+}
+
+class ArgumentosEditScreen {
+  ArgumentosEditScreen(this.diaSemana, this.callback);
+
+  DiaSemana diaSemana;
+  var callback;
 }
 
 class MyApp extends StatelessWidget {
@@ -64,10 +104,22 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
       ),
       initialRoute: MyHomePage.routeName,
-      routes: {
-        MyHomePage.routeName: (context) =>
-            const MyHomePage(title: 'Ementa Semanal'),
-        EditScreen.routeName: (context) => const EditScreen(),
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case MyHomePage.routeName:
+            return PageTransition(
+              child: const MyHomePage(title: 'Ementa Semanal'),
+              type: PageTransitionType.fade,
+            );
+          case EditScreen.routeName:
+            return PageTransition(
+              child: const EditScreen(),
+              type: PageTransitionType.rightToLeft,
+              settings: settings,
+            );
+          default:
+            return null;
+        }
       },
     );
   }
@@ -85,40 +137,89 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   void initState() {
     super.initState();
-    _getEmenta();
+    _loadSharedPreferences();
+    // _getEmenta();
   }
 
-  void _getEmenta() {
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> _loadSharedPreferences() async {
+    var prefs = await SharedPreferences.getInstance();
+    String? userPref = prefs.getString('diasSemanaEmenta');
+    setState(() {
+      if (userPref == null) {
+        _diasSemanaEmenta = null;
+      } else {
+        _diasSemanaEmenta = [];
+        List<dynamic> lista = jsonDecode(userPref);
+        _diasSemanaEmenta =
+            List<DiaSemana>.from(lista.map((e) => DiaSemana.fromJson(e, "")));
+
+        for (int i = 1; i <= Constants.diasSemana.length; i++) {
+          for (var diaSemana in _diasSemanaEmenta!) {
+            if (diaSemana.original.weekDay == Constants.diasSemana[i]) {
+              diaSemana.dia = Constants.diasSemanaPortugues[i]!;
+              break;
+            }
+          }
+        }
+
+        _weekday = DateTime.now().weekday < 6 ? DateTime.now().weekday : 1;
+
+        while (_diasSemanaEmenta!.first.dia !=
+            Constants.diasSemanaPortugues[_weekday]) {
+          _diasSemanaEmenta!.add(_diasSemanaEmenta!.removeAt(0));
+        }
+      }
+    });
+  }
+
+  Future<void> _saveSharedPreferences() async {
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString('diasSemanaEmenta', jsonEncode(_diasSemanaEmenta));
+  }
+
+  void getEmenta() {
     setState(() {
       _fetchEmenta();
     });
-
   }
 
-  final List<DiaSemana>? _diasSemanaEmenta = [];
+  List<DiaSemana>? _diasSemanaEmenta = [];
   bool _fetchingData = false;
+  int _weekday = 1;
 
   Future<void> _fetchEmenta() async {
     try {
       setState(() => _fetchingData = true);
-      http.Response response = await http.get(Uri.parse(_ementaUrl+_menu));
+      http.Response response =
+          await http.get(Uri.parse(Constants.ementaMenuUrl));
       if (response.statusCode == HttpStatus.ok) {
-        final Map<String, dynamic> decodedData = json.decode(response.body);
+        final Map<String, dynamic> decodedData =
+            json.decode(utf8.decode(response.bodyBytes));
 
-        _diasSemanaEmenta!.clear();
-
-        int weekday = DateTime.now().weekday;
-
-        for (var diaSemana in diasSemana.values) {
-          _diasSemanaEmenta!
-              .add(DiaSemana.fromJson(decodedData[diaSemana], diaSemana));
+        if (_diasSemanaEmenta != null) {
+          _diasSemanaEmenta!.clear();
+        } else {
+          _diasSemanaEmenta = [];
         }
 
-        while (_diasSemanaEmenta!.first.dia != diasSemana[weekday]) {
+        for (int i = 1; i <= Constants.diasSemana.length; i++) {
+          _diasSemanaEmenta!.add(DiaSemana.fromJson(
+              decodedData[Constants.diasSemana[i]],
+              Constants.diasSemanaPortugues[i]!));
+        }
+
+        _weekday = DateTime.now().weekday < 6 ? DateTime.now().weekday : 1;
+
+        while (_diasSemanaEmenta!.first.dia !=
+            Constants.diasSemanaPortugues[_weekday]) {
           _diasSemanaEmenta!.add(_diasSemanaEmenta!.removeAt(0));
         }
 
@@ -128,6 +229,7 @@ class _MyHomePageState extends State<MyHomePage> {
       debugPrint('Something went wrong: $ex');
     } finally {
       setState(() => _fetchingData = false);
+      _saveSharedPreferences();
     }
   }
 
@@ -137,32 +239,123 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Center(child: Text(widget.title)),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            for (var diaSemana in _diasSemanaEmenta!)
-              SizedBox(
-                width: 1500,
-                child: Card(
-                  color: Colors.green,
-                  child: Column(
-                    children: [
-                      Text(diaSemana.dia),
-                      Text(diaSemana.original.soup),
-                    ],
-                  ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(
+                  'resources/logo.png',
+                  height: 250,
                 ),
               ),
-          ],
+              if (_diasSemanaEmenta == null)
+                const Text("Não existe informação guardada localmente!")
+              else
+                for (var diaSemana in _diasSemanaEmenta!)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          EditScreen.routeName,
+                          arguments: ArgumentosEditScreen(diaSemana, getEmenta),
+                        ),
+                        child: Card(
+                          color: Colors.lightGreen,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                if (diaSemana.dia ==
+                                    Constants.diasSemanaPortugues[_weekday])
+                                  const Icon(
+                                    Icons.location_pin,
+                                    color: Colors.amber,
+                                  ),
+                                Text(
+                                  diaSemana.dia,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber,
+                                      fontSize: 24),
+                                ),
+                                const Icon(Icons.soup_kitchen),
+                                if (diaSemana.update != null &&
+                                    diaSemana.original.soup !=
+                                        diaSemana.update!.soup)
+                                  Text(
+                                    diaSemana.update!.soup!,
+                                    style: const TextStyle(
+                                        decoration: TextDecoration.underline),
+                                  )
+                                else
+                                  Text(diaSemana.original.soup!),
+                                const Icon(Icons.cruelty_free),
+                                if (diaSemana.update != null &&
+                                    diaSemana.original.meat !=
+                                        diaSemana.update!.meat)
+                                  Text(
+                                    diaSemana.update!.meat!,
+                                    style: const TextStyle(
+                                        decoration: TextDecoration.underline),
+                                  )
+                                else
+                                  Text(diaSemana.original.meat!),
+                                const Icon(Icons.set_meal),
+                                if (diaSemana.update != null &&
+                                    diaSemana.original.fish !=
+                                        diaSemana.update!.fish)
+                                  Text(
+                                    diaSemana.update!.fish!,
+                                    style: const TextStyle(
+                                        decoration: TextDecoration.underline),
+                                  )
+                                else
+                                  Text(diaSemana.original.fish!),
+                                const Icon(Icons.eco_rounded),
+                                if (diaSemana.update != null &&
+                                    diaSemana.original.vegetarian !=
+                                        diaSemana.update!.vegetarian)
+                                  Text(
+                                    diaSemana.update!.vegetarian!,
+                                    style: const TextStyle(
+                                        decoration: TextDecoration.underline),
+                                  )
+                                else
+                                  Text(diaSemana.original.vegetarian!),
+                                const Icon(Icons.apple),
+                                if (diaSemana.update != null &&
+                                    diaSemana.original.desert !=
+                                        diaSemana.update!.desert)
+                                  Text(
+                                    diaSemana.update!.desert!,
+                                    style: const TextStyle(
+                                        decoration: TextDecoration.underline),
+                                  )
+                                else
+                                  Text(diaSemana.original.desert!),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _getEmenta,
+        onPressed: getEmenta,
         tooltip: 'Refresh',
         child: const Icon(Icons.refresh),
       ), // This trailing comma makes auto-formatting nicer for build methods.
