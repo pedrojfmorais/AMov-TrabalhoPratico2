@@ -13,13 +13,6 @@ void main() {
   runApp(const MyApp());
 }
 
-class ArgumentosEditScreen {
-  ArgumentosEditScreen(this.diaSemana, this.callback);
-
-  DiaSemana diaSemana;
-  var callback;
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -69,12 +62,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _loadSharedPreferences();
-    // _getEmenta();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   Future<void> _loadSharedPreferences() async {

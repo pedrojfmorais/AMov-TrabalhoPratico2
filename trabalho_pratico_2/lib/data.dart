@@ -71,3 +71,10 @@ class DiaSemana {
   final Ementa original;
   final Ementa? update;
 }
+
+class ArgumentosEditScreen {
+  ArgumentosEditScreen(this.diaSemana, this.callback);
+
+  DiaSemana diaSemana;
+  Function callback;
+}
