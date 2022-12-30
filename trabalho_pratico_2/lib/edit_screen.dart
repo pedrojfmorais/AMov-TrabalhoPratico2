@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:trabalho_pratico_2/main.dart';
 import 'package:http/http.dart' as http;
 
 import 'data.dart';
@@ -70,7 +69,6 @@ class _EditScreenState extends State<EditScreen> {
   }
 
   void _verificaTexto(var tec, var original, var update, int indiceAtivo) {
-
     if (tec.text != original) {
       _diferenteOriginal[indiceAtivo] = true;
     } else {
@@ -206,6 +204,10 @@ class _EditScreenState extends State<EditScreen> {
         .whenComplete(() => callback());
   }
 
+  void _tirarFoto(){
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -231,6 +233,29 @@ class _EditScreenState extends State<EditScreen> {
                             fontWeight: FontWeight.bold,
                             color: Colors.amber,
                             fontSize: 24),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (diaSemana.original.imageBytes != null)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.memory(
+                                  Uint8List.fromList(
+                                      diaSemana.original.imageBytes!.codeUnits),
+                                  height: 100,
+                                ),
+                              ),
+                            FloatingActionButton(
+                              onPressed: _tirarFoto,
+                              tooltip: 'Tirar foto',
+                              heroTag: "AMovTP2-add-image",
+                              child: const Icon(Icons.camera_alt),
+                            ),
+                          ],
+                        ),
                       ),
                       const Icon(Icons.soup_kitchen),
                       Row(
