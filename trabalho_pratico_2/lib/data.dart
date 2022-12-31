@@ -28,7 +28,7 @@ class Constants {
 class Ementa {
   Ementa.fromJson(Map<String, dynamic> json)
       : img = json['img'],
-        imageBytes = "",
+        imageBytes = null,
         weekDay = json['weekDay'],
         soup = json['soup'],
         fish = json['fish'],

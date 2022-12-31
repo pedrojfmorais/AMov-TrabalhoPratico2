@@ -27,9 +27,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
         textTheme: Theme.of(context).textTheme.apply(
-          fontSizeFactor: 1.1,
-          fontSizeDelta: 2.0,
-        ),
+              fontSizeFactor: 1.1,
+              fontSizeDelta: 2.0,
+            ),
       ),
       initialRoute: MyHomePage.routeName,
       onGenerateRoute: (settings) {
@@ -142,14 +142,14 @@ class _MyHomePageState extends State<MyHomePage> {
       }
 
       for (var diaSemana in _diasSemanaEmenta!) {
+        //Valor default e para não dar uma exceção devido às funções assincronas
+        diaSemana.original.imageBytes = null;
         if (diaSemana.update != null && diaSemana.update!.img != null) {
           diaSemana.original.imageBytes =
               await getImageHttp(diaSemana.update!.img!);
         } else if (diaSemana.original.img != null) {
           diaSemana.original.imageBytes =
               await getImageHttp(diaSemana.original.img!);
-        } else {
-          diaSemana.original.imageBytes = null;
         }
       }
     }
