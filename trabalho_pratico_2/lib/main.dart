@@ -144,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
       for (var diaSemana in _diasSemanaEmenta!) {
         //Valor default e para não dar uma exceção devido às funções assincronas
         diaSemana.original.imageBytes = null;
+
         if (diaSemana.update != null && diaSemana.update!.img != null) {
           diaSemana.original.imageBytes =
               await getImageHttp(diaSemana.update!.img!);
