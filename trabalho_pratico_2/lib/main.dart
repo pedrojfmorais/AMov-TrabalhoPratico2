@@ -2,13 +2,27 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trabalho_pratico_2/camera.dart';
 
 import 'data.dart';
 import 'edit_screen.dart';
+
+late List<CameraDescription> myAvailableCameras;
+
+
+Future<String?> getImageHttp(String nomeImagem) async {
+  http.Response response =
+  await http.get(Uri.parse(Constants.ementaImageUrl + nomeImagem));
+  if (response.statusCode == HttpStatus.ok) {
+    return String.fromCharCodes(response.bodyBytes);
+  }
+  return null;
+}
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +53,12 @@ class MyApp extends StatelessWidget {
               type: PageTransitionType.rightToLeft,
               settings: settings,
             );
+          case CameraPage.routeName:
+            return PageTransition(
+              child: CameraPage(),
+              type: PageTransitionType.bottomToTop,
+              settings: settings,
+            );
           default:
             return null;
         }
@@ -59,10 +79,40 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late CameraController controller;
+
   @override
   void initState() {
     super.initState();
     _loadSharedPreferences();
+
+    _getAvailableCameras();
+  }
+
+  Future<void> _getAvailableCameras() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    myAvailableCameras = await availableCameras();
+    _initCamera(myAvailableCameras.first);
+  }
+
+  Future<void> _initCamera(CameraDescription description) async{
+    controller = CameraController(description, ResolutionPreset.max, enableAudio: true);
+
+    try{
+      await controller.initialize();
+      // to notify the widgets that camera has been initialized and now camera preview can be done
+      setState((){});
+    }
+    catch(e){
+      print(e);
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    controller.dispose();
   }
 
   Future<void> _loadSharedPreferences() async {
@@ -95,10 +145,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
       for (var diaSemana in _diasSemanaEmenta!) {
         if (diaSemana.update != null && diaSemana.update!.img != null) {
-          diaSemana.original.imageBytes = await _getImage(diaSemana.update!.img!);
+          diaSemana.original.imageBytes =
+              await getImageHttp(diaSemana.update!.img!);
         } else if (diaSemana.original.img != null) {
           diaSemana.original.imageBytes =
-          await _getImage(diaSemana.original.img!);
+              await getImageHttp(diaSemana.original.img!);
         } else {
           diaSemana.original.imageBytes = null;
         }
@@ -157,16 +208,15 @@ class _MyHomePageState extends State<MyHomePage> {
         for (var diaSemana in _diasSemanaEmenta!) {
           if (diaSemana.update != null && diaSemana.update!.img != null) {
             diaSemana.original.imageBytes =
-                await _getImage(diaSemana.update!.img!);
+                await getImageHttp(diaSemana.update!.img!);
           } else if (diaSemana.original.img != null) {
             diaSemana.original.imageBytes =
-                await _getImage(diaSemana.original.img!);
+                await getImageHttp(diaSemana.original.img!);
           } else {
             diaSemana.original.imageBytes = null;
           }
           diaSemana.update ??= diaSemana.original;
         }
-
 
         setState(() => {_diasSemanaEmenta});
       }
@@ -177,15 +227,6 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() => _imageSize = 250);
       _saveSharedPreferences();
     }
-  }
-
-  Future<String?> _getImage(String nomeImagem) async {
-    http.Response response =
-        await http.get(Uri.parse(Constants.ementaImageUrl + nomeImagem));
-    if (response.statusCode == HttpStatus.ok) {
-      return String.fromCharCodes(response.bodyBytes);
-    }
-    return null;
   }
 
   @override
@@ -202,7 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
+            children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: AnimatedContainer(

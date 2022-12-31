@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:trabalho_pratico_2/main.dart';
 
 import 'data.dart';
+import 'camera.dart';
 
 class EditScreen extends StatefulWidget {
   const EditScreen({Key? key}) : super(key: key);
@@ -23,8 +27,8 @@ class _EditScreenState extends State<EditScreen> {
   late final Function callback = args.callback;
 
   bool _botaoAtivo = false;
-  List<bool> _alterado = [false, false, false, false, false];
-  List<bool> _diferenteOriginal = [false, false, false, false, false];
+  List<bool> _alterado = [false, false, false, false, false, false];
+  List<bool> _diferenteOriginal = [false, false, false, false, false, false];
 
   late final TextEditingController _tecSopa = TextEditingController();
   late final TextEditingController _tecCarne = TextEditingController();
@@ -170,6 +174,7 @@ class _EditScreenState extends State<EditScreen> {
   @override
   void dispose() {
     super.dispose();
+
     _tecSopa.dispose();
     _tecCarne.dispose();
     _tecPeixe.dispose();
@@ -177,12 +182,57 @@ class _EditScreenState extends State<EditScreen> {
     _tecSobremesa.dispose();
   }
 
+  void _setImage(String path) {
+    var image = File(path).readAsBytesSync();
+    diaSemana.original.imageBytes = String.fromCharCodes(image);
+
+    _alterado[5] = true;
+    _diferenteOriginal[5] = true;
+    setState(() {
+      if (_alterado.contains(true)) {
+        _botaoAtivo = true;
+      } else {
+        _botaoAtivo = false;
+      }
+      _diferenteOriginal;
+    });
+  }
+
+  Future<void> _resetImage() async {
+    if (diaSemana.update!.img != null) {
+      diaSemana.original.imageBytes =
+          await getImageHttp(diaSemana.update!.img!);
+    } else if (diaSemana.original.img != null) {
+      diaSemana.original.imageBytes =
+          await getImageHttp(diaSemana.original.img!);
+    } else {
+      diaSemana.original.imageBytes = null;
+    }
+
+    _alterado[5] = false;
+    _diferenteOriginal[5] = false;
+
+    print(diaSemana.original.imageBytes);
+
+    setState(() {
+      diaSemana.original.imageBytes;
+
+      if (_alterado.contains(true)) {
+        _botaoAtivo = true;
+      } else {
+        _botaoAtivo = false;
+      }
+      _diferenteOriginal;
+    });
+  }
+
   Future<http.Response> _updateEmenta() async {
     Navigator.pop(context);
 
-    ByteData bytes = await rootBundle.load('resources/logo.png');
-    var buffer = bytes.buffer;
-    var m = base64.encode(Uint8List.view(buffer));
+    if(diaSemana.original.imageBytes != null &&
+        diaSemana.update!.img != diaSemana.original.imageBytes) {
+      diaSemana.update!.img = base64.encode(diaSemana.original.imageBytes!.codeUnits);
+    }
 
     return http
         .post(
@@ -191,8 +241,7 @@ class _EditScreenState extends State<EditScreen> {
             'Content-Type': 'application/json; charset=UTF-8',
           },
           body: jsonEncode(Ementa(
-              // diaSemana.original.img,
-              m,
+              diaSemana.update!.img ?? diaSemana.original.img,
               null,
               diaSemana.original.weekDay,
               _tecSopa.text,
@@ -202,10 +251,6 @@ class _EditScreenState extends State<EditScreen> {
               _tecSobremesa.text)),
         )
         .whenComplete(() => callback());
-  }
-
-  void _tirarFoto(){
-
   }
 
   @override
@@ -249,10 +294,27 @@ class _EditScreenState extends State<EditScreen> {
                                 ),
                               ),
                             FloatingActionButton(
-                              onPressed: _tirarFoto,
+                              onPressed: () => Navigator.pushNamed(
+                                context,
+                                CameraPage.routeName,
+                                arguments: _setImage,
+                              ),
                               tooltip: 'Tirar foto',
                               heroTag: "AMovTP2-add-image",
                               child: const Icon(Icons.camera_alt),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: FloatingActionButton(
+                                onPressed:
+                                    _diferenteOriginal[5] ? _resetImage : null,
+                                tooltip: 'Reset Image',
+                                heroTag: "AMovTP2-reset-image",
+                                backgroundColor: _diferenteOriginal[5]
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.white24,
+                                child: const Icon(Icons.backspace_outlined),
+                              ),
                             ),
                           ],
                         ),

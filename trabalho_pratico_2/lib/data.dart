@@ -1,6 +1,4 @@
 
-import 'dart:typed_data';
-
 class Constants {
   static const Map<int, String> diasSemana = {
     1: 'MONDAY',
