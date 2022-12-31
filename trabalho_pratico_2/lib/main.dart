@@ -74,7 +74,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late CameraController controller;
 
   List<DiaSemana>? _diasSemanaEmenta = [];
-  bool _fetchingData = false;
   double? _imageSize = 250;
   int _weekday = 1;
 
@@ -175,7 +174,6 @@ class _MyHomePageState extends State<MyHomePage> {
   /// HTTP Get para as ementas
   Future<void> _fetchEmenta() async {
     try {
-      setState(() => _fetchingData = true);
       setState(() => _imageSize = 50);
       http.Response response =
           await http.get(Uri.parse(Constants.ementaMenuUrl));
@@ -220,7 +218,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (ex) {
       debugPrint('Something went wrong: $ex');
     } finally {
-      setState(() => _fetchingData = false);
       setState(() => _imageSize = 250);
       _saveSharedPreferences();
     }
