@@ -20,8 +20,9 @@ class Constants {
     5: 'Sexta-feira'
   };
 
-  static const String ementaMenuUrl = 'http://192.168.1.39:8080/menu';
-  static const String ementaImageUrl = 'http://192.168.1.39:8080/images/';
+  static const String server = '192.168.1.39:8080';
+  static const String ementaMenuUrl = 'http://$server/menu';
+  static const String ementaImageUrl = 'http://$server/images/';
 }
 
 class Ementa {
