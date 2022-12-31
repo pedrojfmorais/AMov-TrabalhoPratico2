@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:trabalho_pratico_2/main.dart';
 
 import 'data.dart';
 import 'camera.dart';
@@ -27,8 +25,15 @@ class _EditScreenState extends State<EditScreen> {
   late final Function callback = args.callback;
 
   bool _botaoAtivo = false;
-  List<bool> _alterado = [false, false, false, false, false, false];
-  List<bool> _diferenteOriginal = [false, false, false, false, false, false];
+  final List<bool> _alterado = [false, false, false, false, false, false];
+  final List<bool> _diferenteOriginal = [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ];
 
   late final TextEditingController _tecSopa = TextEditingController();
   late final TextEditingController _tecCarne = TextEditingController();
@@ -45,89 +50,6 @@ class _EditScreenState extends State<EditScreen> {
     _tecPeixe.addListener(_tecPeixeVerificaTexto);
     _tecVegetariano.addListener(_tecVegetarianoVerificaTexto);
     _tecSobremesa.addListener(_tecSobremesaVerificaTexto);
-  }
-
-  void _tecSopaVerificaTexto() {
-    _verificaTexto(
-        _tecSopa, diaSemana.original.soup, diaSemana.update!.soup, 0);
-  }
-
-  void _tecCarneVerificaTexto() {
-    _verificaTexto(
-        _tecCarne, diaSemana.original.meat, diaSemana.update!.meat, 1);
-  }
-
-  void _tecPeixeVerificaTexto() {
-    _verificaTexto(
-        _tecPeixe, diaSemana.original.fish, diaSemana.update!.fish, 2);
-  }
-
-  void _tecVegetarianoVerificaTexto() {
-    _verificaTexto(_tecVegetariano, diaSemana.original.vegetarian,
-        diaSemana.update!.vegetarian, 3);
-  }
-
-  void _tecSobremesaVerificaTexto() {
-    _verificaTexto(
-        _tecSobremesa, diaSemana.original.desert, diaSemana.update!.desert, 4);
-  }
-
-  void _verificaTexto(var tec, var original, var update, int indiceAtivo) {
-    if (tec.text != original) {
-      _diferenteOriginal[indiceAtivo] = true;
-    } else {
-      _diferenteOriginal[indiceAtivo] = false;
-    }
-
-    if (diaSemana.update != null) {
-      if (tec.text != update) {
-        _alterado[indiceAtivo] = true;
-      } else {
-        _alterado[indiceAtivo] = false;
-      }
-    } else {
-      if (tec.text != original) {
-        _alterado[indiceAtivo] = true;
-      } else {
-        _alterado[indiceAtivo] = false;
-      }
-    }
-
-    setState(() {
-      if (_alterado.contains(true)) {
-        _botaoAtivo = true;
-      } else {
-        _botaoAtivo = false;
-      }
-      _diferenteOriginal;
-    });
-  }
-
-  void _resetSopa() {
-    _reset(_tecSopa, diaSemana.original.soup, diaSemana.update!.soup, 0);
-  }
-
-  void _resetCarne() {
-    _reset(_tecCarne, diaSemana.original.meat, diaSemana.update!.meat, 1);
-  }
-
-  void _resetPeixe() {
-    _reset(_tecPeixe, diaSemana.original.fish, diaSemana.update!.fish, 2);
-  }
-
-  void _resetVegetariano() {
-    _reset(_tecVegetariano, diaSemana.original.vegetarian,
-        diaSemana.update!.vegetarian, 3);
-  }
-
-  void _resetSobremesa() {
-    _reset(
-        _tecSobremesa, diaSemana.original.desert, diaSemana.update!.desert, 4);
-  }
-
-  void _reset(var tec, var original, var update, var indice) {
-    tec.text = original;
-    _verificaTexto(tec, original, update, indice);
   }
 
   @override
@@ -182,6 +104,94 @@ class _EditScreenState extends State<EditScreen> {
     _tecSobremesa.dispose();
   }
 
+  ///Listeners TextFormField
+  void _tecSopaVerificaTexto() {
+    _verificaTexto(
+        _tecSopa, diaSemana.original.soup, diaSemana.update!.soup, 0);
+  }
+
+  void _tecCarneVerificaTexto() {
+    _verificaTexto(
+        _tecCarne, diaSemana.original.meat, diaSemana.update!.meat, 1);
+  }
+
+  void _tecPeixeVerificaTexto() {
+    _verificaTexto(
+        _tecPeixe, diaSemana.original.fish, diaSemana.update!.fish, 2);
+  }
+
+  void _tecVegetarianoVerificaTexto() {
+    _verificaTexto(_tecVegetariano, diaSemana.original.vegetarian,
+        diaSemana.update!.vegetarian, 3);
+  }
+
+  void _tecSobremesaVerificaTexto() {
+    _verificaTexto(
+        _tecSobremesa, diaSemana.original.desert, diaSemana.update!.desert, 4);
+  }
+
+  /// Como o comportamento é semelhante a verificação do texto é realizado numa só função
+  void _verificaTexto(var tec, var original, var update, int indiceAtivo) {
+    if (tec.text != original) {
+      _diferenteOriginal[indiceAtivo] = true;
+    } else {
+      _diferenteOriginal[indiceAtivo] = false;
+    }
+
+    if (diaSemana.update != null) {
+      if (tec.text != update) {
+        _alterado[indiceAtivo] = true;
+      } else {
+        _alterado[indiceAtivo] = false;
+      }
+    } else {
+      if (tec.text != original) {
+        _alterado[indiceAtivo] = true;
+      } else {
+        _alterado[indiceAtivo] = false;
+      }
+    }
+
+    setState(() {
+      if (_alterado.contains(true)) {
+        _botaoAtivo = true;
+      } else {
+        _botaoAtivo = false;
+      }
+      _diferenteOriginal;
+    });
+  }
+
+  ///Listeners Botões reset
+  void _resetSopa() {
+    _reset(_tecSopa, diaSemana.original.soup, diaSemana.update!.soup, 0);
+  }
+
+  void _resetCarne() {
+    _reset(_tecCarne, diaSemana.original.meat, diaSemana.update!.meat, 1);
+  }
+
+  void _resetPeixe() {
+    _reset(_tecPeixe, diaSemana.original.fish, diaSemana.update!.fish, 2);
+  }
+
+  void _resetVegetariano() {
+    _reset(_tecVegetariano, diaSemana.original.vegetarian,
+        diaSemana.update!.vegetarian, 3);
+  }
+
+  void _resetSobremesa() {
+    _reset(
+        _tecSobremesa, diaSemana.original.desert, diaSemana.update!.desert, 4);
+  }
+
+  /// Como o comportamento é semelhante o reset é realizado numa só função
+  void _reset(var tec, var original, var update, var indice) {
+    tec.text = original;
+    _verificaTexto(tec, original, update, indice);
+  }
+
+  /// Alteração da imagem mostrada pela foto tirada
   void _setImage(String path) {
     var image = File(path).readAsBytesSync();
     diaSemana.original.imageBytes = String.fromCharCodes(image);
@@ -198,6 +208,7 @@ class _EditScreenState extends State<EditScreen> {
     });
   }
 
+  ///Resetar da foto tirada para a imagem inicial
   Future<void> _resetImage() async {
     if (diaSemana.update!.img != null) {
       diaSemana.original.imageBytes =
@@ -212,8 +223,6 @@ class _EditScreenState extends State<EditScreen> {
     _alterado[5] = false;
     _diferenteOriginal[5] = false;
 
-    print(diaSemana.original.imageBytes);
-
     setState(() {
       diaSemana.original.imageBytes;
 
@@ -226,12 +235,14 @@ class _EditScreenState extends State<EditScreen> {
     });
   }
 
+  ///HTTP Post para atualizar uma ementa
   Future<http.Response> _updateEmenta() async {
     Navigator.pop(context);
 
-    if(diaSemana.original.imageBytes != null &&
+    if (diaSemana.original.imageBytes != null &&
         diaSemana.update!.img != diaSemana.original.imageBytes) {
-      diaSemana.update!.img = base64.encode(diaSemana.original.imageBytes!.codeUnits);
+      diaSemana.update!.img =
+          base64.encode(diaSemana.original.imageBytes!.codeUnits);
     }
 
     return http

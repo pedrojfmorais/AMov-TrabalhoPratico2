@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+import 'package:camera/camera.dart';
 
 class Constants {
   static const Map<int, String> diasSemana = {
@@ -7,6 +11,7 @@ class Constants {
     4: 'THURSDAY',
     5: 'FRIDAY'
   };
+
   static const Map<int, String> diasSemanaPortugues = {
     1: 'Segunda-feira',
     2: 'Terça-feira',
@@ -42,8 +47,8 @@ class Ementa {
     };
   }
 
-  Ementa(this.img, this.imageBytes, this.weekDay, this.soup, this.fish, this.meat,
-      this.vegetarian, this.desert);
+  Ementa(this.img, this.imageBytes, this.weekDay, this.soup, this.fish,
+      this.meat, this.vegetarian, this.desert);
 
   late String? img;
   late String? imageBytes;
@@ -59,7 +64,7 @@ class DiaSemana {
   DiaSemana.fromJson(Map<String, dynamic> json, this.dia)
       : original = Ementa.fromJson(json['original']),
         update =
-        json['update'] == null ? null : Ementa.fromJson(json['update']);
+            json['update'] == null ? null : Ementa.fromJson(json['update']);
 
   Map<String, dynamic> toJson() {
     return {
@@ -79,4 +84,16 @@ class ArgumentosEditScreen {
 
   DiaSemana diaSemana;
   Function callback;
+}
+
+late List<CameraDescription> myAvailableCameras;
+
+///HTTP Get da imagem
+Future<String?> getImageHttp(String nomeImagem) async {
+  http.Response response =
+      await http.get(Uri.parse(Constants.ementaImageUrl + nomeImagem));
+  if (response.statusCode == HttpStatus.ok) {
+    return String.fromCharCodes(response.bodyBytes);
+  }
+  return null;
 }

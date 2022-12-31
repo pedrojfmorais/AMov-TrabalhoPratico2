@@ -12,18 +12,6 @@ import 'package:trabalho_pratico_2/camera.dart';
 import 'data.dart';
 import 'edit_screen.dart';
 
-late List<CameraDescription> myAvailableCameras;
-
-
-Future<String?> getImageHttp(String nomeImagem) async {
-  http.Response response =
-  await http.get(Uri.parse(Constants.ementaImageUrl + nomeImagem));
-  if (response.statusCode == HttpStatus.ok) {
-    return String.fromCharCodes(response.bodyBytes);
-  }
-  return null;
-}
-
 void main() {
   runApp(const MyApp());
 }
@@ -38,6 +26,10 @@ class MyApp extends StatelessWidget {
       title: 'Ementa',
       theme: ThemeData(
         primarySwatch: Colors.orange,
+        textTheme: Theme.of(context).textTheme.apply(
+          fontSizeFactor: 1.1,
+          fontSizeDelta: 2.0,
+        ),
       ),
       initialRoute: MyHomePage.routeName,
       onGenerateRoute: (settings) {
@@ -81,31 +73,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late CameraController controller;
 
+  List<DiaSemana>? _diasSemanaEmenta = [];
+  bool _fetchingData = false;
+  double? _imageSize = 250;
+  int _weekday = 1;
+
   @override
   void initState() {
     super.initState();
+
     _loadSharedPreferences();
-
     _getAvailableCameras();
-  }
-
-  Future<void> _getAvailableCameras() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    myAvailableCameras = await availableCameras();
-    _initCamera(myAvailableCameras.first);
-  }
-
-  Future<void> _initCamera(CameraDescription description) async{
-    controller = CameraController(description, ResolutionPreset.max, enableAudio: true);
-
-    try{
-      await controller.initialize();
-      // to notify the widgets that camera has been initialized and now camera preview can be done
-      setState((){});
-    }
-    catch(e){
-      print(e);
-    }
   }
 
   @override
@@ -115,6 +93,27 @@ class _MyHomePageState extends State<MyHomePage> {
     controller.dispose();
   }
 
+  /// Ir buscar cameras disponiveis
+  Future<void> _getAvailableCameras() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    myAvailableCameras = await availableCameras();
+    _initCamera(myAvailableCameras.first);
+  }
+
+  /// Inicialização camera
+  Future<void> _initCamera(CameraDescription description) async {
+    controller =
+        CameraController(description, ResolutionPreset.max, enableAudio: true);
+
+    try {
+      await controller.initialize();
+      setState(() {});
+    } catch (e) {
+      debugPrint('Something went wrong: $e');
+    }
+  }
+
+  /// Carregar Shared Preferences
   Future<void> _loadSharedPreferences() async {
     var prefs = await SharedPreferences.getInstance();
     String? userPref = prefs.getString('diasSemanaEmenta');
@@ -160,22 +159,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  /// Guardar na shared preferences
   Future<void> _saveSharedPreferences() async {
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('diasSemanaEmenta', jsonEncode(_diasSemanaEmenta));
   }
 
+  ///Função ir buscar ementas
   void getEmenta() {
     setState(() {
       _fetchEmenta();
     });
   }
 
-  List<DiaSemana>? _diasSemanaEmenta = [];
-  bool _fetchingData = false;
-  double? _imageSize = 250;
-  int _weekday = 1;
-
+  /// HTTP Get para as ementas
   Future<void> _fetchEmenta() async {
     try {
       setState(() => _fetchingData = true);
@@ -233,13 +230,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Center(child: Text(widget.title)),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
