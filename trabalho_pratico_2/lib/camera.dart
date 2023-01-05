@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 
 import 'data.dart';
 
+/// Credits: https://medium.com/@fernnandoptr/how-to-use-camera-in-flutter-flutter-camera-package-44defe81d2da
+
 class CameraPage extends StatefulWidget {
   CameraPage({super.key});
 

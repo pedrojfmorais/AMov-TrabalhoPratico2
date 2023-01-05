@@ -103,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
     controller.dispose();
   }
 
-  //Inicializar localização
+  /// Inicializar localização
   Future<void> _initLocation() async {
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
@@ -126,8 +126,10 @@ class _MyHomePageState extends State<MyHomePage> {
     _locationData = await location.getLocation();
 
     setState(() {
-      _podeEditar = _locationData.latitude == Constants.latitudeIsec &&
-          _locationData.longitude == Constants.longitudeIsec;
+      _podeEditar = (((_locationData.latitude! - Constants.latitudeIsec) < 1 ||
+              (_locationData.latitude! - Constants.latitudeIsec) > 1) &&
+          ((_locationData.longitude! - Constants.longitudeIsec) < 1 ||
+              (_locationData.longitude! - Constants.longitudeIsec) > 1));
     });
   }
 
@@ -139,8 +141,10 @@ class _MyHomePageState extends State<MyHomePage> {
     _locationData = await location.getLocation();
 
     setState(() {
-      _podeEditar = _locationData.latitude == Constants.latitudeIsec &&
-          _locationData.longitude == Constants.longitudeIsec;
+      _podeEditar = (((_locationData.latitude! - Constants.latitudeIsec) < 1 ||
+              (_locationData.latitude! - Constants.latitudeIsec) > 1) &&
+          ((_locationData.longitude! - Constants.longitudeIsec) < 1 ||
+              (_locationData.longitude! - Constants.longitudeIsec) > 1));
     });
   }
 
@@ -294,13 +298,18 @@ class _MyHomePageState extends State<MyHomePage> {
               child: SizedBox(
                 width: double.infinity,
                 child: GestureDetector(
-                  onTap: () => _podeEditar
-                      ? Navigator.pushNamed(
-                          context,
-                          EditScreen.routeName,
-                          arguments: ArgumentosEditScreen(diaSemana, getEmenta),
-                        )
-                      : null,
+                  onTap: () async {
+                    if (_podeEditar) {
+                      Navigator.pushNamed(
+                        context,
+                        EditScreen.routeName,
+                        arguments: ArgumentosEditScreen(diaSemana, getEmenta),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Encontra-se muito longe da cantina')));
+                    }
+                  },
                   child: Card(
                     color: Colors.lightGreen,
                     child: Padding(
@@ -425,7 +434,21 @@ class _MyHomePageState extends State<MyHomePage> {
               backgroundColor: Colors.white,
             )
           : FloatingActionButton(
-              onPressed: getEmenta,
+              onPressed: () {
+                getEmenta();
+                _getCoordinates();
+
+                if (!_serviceEnabled) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Serviço de localização não disponivel')));
+                }
+
+                if (_permissionGranted != PermissionStatus.granted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content:
+                          Text('Não foram dadas permissões de localização')));
+                }
+              },
               tooltip: 'Refresh',
               heroTag: "AMovTP2-refresh",
               child: const Icon(Icons.refresh),

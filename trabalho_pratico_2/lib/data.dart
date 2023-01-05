@@ -23,8 +23,8 @@ class Constants {
   static const String server = '192.168.1.40:8080';
   static const String ementaMenuUrl = 'http://$server/menu';
   static const String ementaImageUrl = 'http://$server/images/';
-  static const double latitudeIsec = 0.0;
-  static const double longitudeIsec = 0.0;
+  static const double latitudeIsec = 40.19272104727294;
+  static const double longitudeIsec = -8.411595263284767;
 }
 
 class Ementa {
