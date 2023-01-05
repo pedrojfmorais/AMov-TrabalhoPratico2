@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:location/location.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trabalho_pratico_2/camera.dart';
@@ -78,12 +79,21 @@ class _MyHomePageState extends State<MyHomePage> {
   double? _imageSize = 250;
   int _weekday = 1;
 
+  Location location = Location();
+
+  bool _serviceEnabled = false;
+  PermissionStatus _permissionGranted = PermissionStatus.denied;
+  late LocationData _locationData;
+
+  bool _podeEditar = false;
+
   @override
   void initState() {
     super.initState();
 
     _loadSharedPreferences();
     _getAvailableCameras();
+    _initLocation();
   }
 
   @override
@@ -91,6 +101,47 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
 
     controller.dispose();
+  }
+
+  //Inicializar localização
+  Future<void> _initLocation() async {
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    setState(() => {});
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+
+    setState(() {
+      _podeEditar = _locationData.latitude == Constants.latitudeIsec &&
+          _locationData.longitude == Constants.longitudeIsec;
+    });
+  }
+
+  Future<void> _getCoordinates() async {
+    if (!_serviceEnabled || _permissionGranted != PermissionStatus.granted) {
+      return;
+    }
+
+    _locationData = await location.getLocation();
+
+    setState(() {
+      _podeEditar = _locationData.latitude == Constants.latitudeIsec &&
+          _locationData.longitude == Constants.longitudeIsec;
+    });
   }
 
   /// Ir buscar cameras disponiveis
@@ -231,6 +282,113 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Widget _ementasWidget(BuildContext context) {
+    return Column(
+      children: [
+        if (_diasSemanaEmenta == null)
+          const Text("Não existe informação guardada localmente!")
+        else
+          for (var diaSemana in _diasSemanaEmenta!)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: GestureDetector(
+                  onTap: () => _podeEditar
+                      ? Navigator.pushNamed(
+                          context,
+                          EditScreen.routeName,
+                          arguments: ArgumentosEditScreen(diaSemana, getEmenta),
+                        )
+                      : null,
+                  child: Card(
+                    color: Colors.lightGreen,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          if (diaSemana.dia ==
+                              Constants.diasSemanaPortugues[_weekday])
+                            const Icon(
+                              Icons.location_pin,
+                              color: Colors.amber,
+                            ),
+                          Text(
+                            diaSemana.dia,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber,
+                                fontSize: 24),
+                          ),
+                          if (diaSemana.original.imageBytes != null)
+                            Image.memory(
+                              Uint8List.fromList(
+                                  diaSemana.original.imageBytes!.codeUnits),
+                              height: 100,
+                            ),
+                          const Icon(Icons.soup_kitchen),
+                          if (diaSemana.update != null &&
+                              diaSemana.original.soup != diaSemana.update!.soup)
+                            Text(
+                              diaSemana.update!.soup!,
+                              style: const TextStyle(
+                                  decoration: TextDecoration.underline),
+                            )
+                          else
+                            Text(diaSemana.original.soup!),
+                          const Icon(Icons.cruelty_free),
+                          if (diaSemana.update != null &&
+                              diaSemana.original.meat != diaSemana.update!.meat)
+                            Text(
+                              diaSemana.update!.meat!,
+                              style: const TextStyle(
+                                  decoration: TextDecoration.underline),
+                            )
+                          else
+                            Text(diaSemana.original.meat!),
+                          const Icon(Icons.set_meal),
+                          if (diaSemana.update != null &&
+                              diaSemana.original.fish != diaSemana.update!.fish)
+                            Text(
+                              diaSemana.update!.fish!,
+                              style: const TextStyle(
+                                  decoration: TextDecoration.underline),
+                            )
+                          else
+                            Text(diaSemana.original.fish!),
+                          const Icon(Icons.eco_rounded),
+                          if (diaSemana.update != null &&
+                              diaSemana.original.vegetarian !=
+                                  diaSemana.update!.vegetarian)
+                            Text(
+                              diaSemana.update!.vegetarian!,
+                              style: const TextStyle(
+                                  decoration: TextDecoration.underline),
+                            )
+                          else
+                            Text(diaSemana.original.vegetarian!),
+                          const Icon(Icons.apple),
+                          if (diaSemana.update != null &&
+                              diaSemana.original.desert !=
+                                  diaSemana.update!.desert)
+                            Text(
+                              diaSemana.update!.desert!,
+                              style: const TextStyle(
+                                  decoration: TextDecoration.underline),
+                            )
+                          else
+                            Text(diaSemana.original.desert!),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -257,107 +415,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ),
-              if (_diasSemanaEmenta == null)
-                const Text("Não existe informação guardada localmente!")
-              else
-                for (var diaSemana in _diasSemanaEmenta!)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: GestureDetector(
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          EditScreen.routeName,
-                          arguments: ArgumentosEditScreen(diaSemana, getEmenta),
-                        ),
-                        child: Card(
-                          color: Colors.lightGreen,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                if (diaSemana.dia ==
-                                    Constants.diasSemanaPortugues[_weekday])
-                                  const Icon(
-                                    Icons.location_pin,
-                                    color: Colors.amber,
-                                  ),
-                                Text(
-                                  diaSemana.dia,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.amber,
-                                      fontSize: 24),
-                                ),
-                                if (diaSemana.original.imageBytes != null)
-                                  Image.memory(
-                                    Uint8List.fromList(diaSemana
-                                        .original.imageBytes!.codeUnits),
-                                    height: 100,
-                                  ),
-                                const Icon(Icons.soup_kitchen),
-                                if (diaSemana.update != null &&
-                                    diaSemana.original.soup !=
-                                        diaSemana.update!.soup)
-                                  Text(
-                                    diaSemana.update!.soup!,
-                                    style: const TextStyle(
-                                        decoration: TextDecoration.underline),
-                                  )
-                                else
-                                  Text(diaSemana.original.soup!),
-                                const Icon(Icons.cruelty_free),
-                                if (diaSemana.update != null &&
-                                    diaSemana.original.meat !=
-                                        diaSemana.update!.meat)
-                                  Text(
-                                    diaSemana.update!.meat!,
-                                    style: const TextStyle(
-                                        decoration: TextDecoration.underline),
-                                  )
-                                else
-                                  Text(diaSemana.original.meat!),
-                                const Icon(Icons.set_meal),
-                                if (diaSemana.update != null &&
-                                    diaSemana.original.fish !=
-                                        diaSemana.update!.fish)
-                                  Text(
-                                    diaSemana.update!.fish!,
-                                    style: const TextStyle(
-                                        decoration: TextDecoration.underline),
-                                  )
-                                else
-                                  Text(diaSemana.original.fish!),
-                                const Icon(Icons.eco_rounded),
-                                if (diaSemana.update != null &&
-                                    diaSemana.original.vegetarian !=
-                                        diaSemana.update!.vegetarian)
-                                  Text(
-                                    diaSemana.update!.vegetarian!,
-                                    style: const TextStyle(
-                                        decoration: TextDecoration.underline),
-                                  )
-                                else
-                                  Text(diaSemana.original.vegetarian!),
-                                const Icon(Icons.apple),
-                                if (diaSemana.update != null &&
-                                    diaSemana.original.desert !=
-                                        diaSemana.update!.desert)
-                                  Text(
-                                    diaSemana.update!.desert!,
-                                    style: const TextStyle(
-                                        decoration: TextDecoration.underline),
-                                  )
-                                else
-                                  Text(diaSemana.original.desert!),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+              _ementasWidget(context),
             ],
           ),
         ),

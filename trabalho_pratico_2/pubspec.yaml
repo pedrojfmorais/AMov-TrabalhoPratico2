@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   shared_preferences: ^2.0.15
   page_transition: ^2.0.9
+  location: ^4.2.0
   camera: ^0.10.1
   http: ^0.13.5
 
