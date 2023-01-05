@@ -74,6 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late CameraController controller;
 
   List<DiaSemana>? _diasSemanaEmenta = [];
+  bool _fetchingData = false;
   double? _imageSize = 250;
   int _weekday = 1;
 
@@ -175,7 +176,10 @@ class _MyHomePageState extends State<MyHomePage> {
   /// HTTP Get para as ementas
   Future<void> _fetchEmenta() async {
     try {
-      setState(() => _imageSize = 50);
+      setState(() {
+        _imageSize = 50;
+        _fetchingData = true;
+      });
       http.Response response =
           await http.get(Uri.parse(Constants.ementaMenuUrl));
       if (response.statusCode == HttpStatus.ok) {
@@ -219,7 +223,10 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (ex) {
       debugPrint('Something went wrong: $ex');
     } finally {
-      setState(() => _imageSize = 250);
+      setState(() {
+        _imageSize = 250;
+        _fetchingData = false;
+      });
       _saveSharedPreferences();
     }
   }
@@ -355,12 +362,16 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: getEmenta,
-        tooltip: 'Refresh',
-        heroTag: "AMovTP2-refresh",
-        child: const Icon(Icons.refresh),
-      ),
+      floatingActionButton: _fetchingData
+          ? const CircularProgressIndicator(
+              backgroundColor: Colors.white,
+            )
+          : FloatingActionButton(
+              onPressed: getEmenta,
+              tooltip: 'Refresh',
+              heroTag: "AMovTP2-refresh",
+              child: const Icon(Icons.refresh),
+            ),
     );
   }
 }
