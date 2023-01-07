@@ -134,6 +134,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _getCoordinates() async {
+    if (_permissionGranted != PermissionStatus.granted &&
+        _permissionGranted != PermissionStatus.deniedForever) {
+      _permissionGranted = await location.requestPermission();
+    }
+
     if (!_serviceEnabled || _permissionGranted != PermissionStatus.granted) {
       return;
     }
