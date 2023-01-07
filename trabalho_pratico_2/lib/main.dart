@@ -139,6 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _permissionGranted = await location.requestPermission();
     }
 
+    setState(() { });
+
     if (!_serviceEnabled || _permissionGranted != PermissionStatus.granted) {
       return;
     }
@@ -176,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Carregar Shared Preferences
   Future<void> _loadSharedPreferences() async {
     var prefs = await SharedPreferences.getInstance();
-    String? userPref = prefs.getString('diasSemanaEmenta');
+    String? userPref = prefs.getString(Constants.sharedPreferencesValueName);
 
     if (userPref == null) {
       _diasSemanaEmenta = null;
@@ -223,7 +225,8 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Guardar na shared preferences
   Future<void> _saveSharedPreferences() async {
     var prefs = await SharedPreferences.getInstance();
-    prefs.setString('diasSemanaEmenta', jsonEncode(_diasSemanaEmenta));
+    prefs.setString(
+        Constants.sharedPreferencesValueName, jsonEncode(_diasSemanaEmenta));
   }
 
   ///Função ir buscar ementas
